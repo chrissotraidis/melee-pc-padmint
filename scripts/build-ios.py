@@ -45,8 +45,8 @@ def main():
     args = parser.parse_args()
     if platform.system() != 'Darwin' or platform.machine() != 'arm64':
         parser.error('This recipe currently requires an Apple Silicon Mac and full Xcode.')
-    if not 1 <= args.jobs <= 8:
-        parser.error('--jobs must be between 1 and 8')
+    if not 1 <= args.jobs <= 16:
+        parser.error('--jobs must be between 1 and 16')
     recipe = Path(__file__).resolve().parents[1]
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
