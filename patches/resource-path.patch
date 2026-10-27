@@ -1,0 +1,66 @@
+--- a/src/pc/main.c
++++ b/src/pc/main.c
+@@ -543,7 +543,7 @@
+     resources_path[0] = '\0'; /* assets come from the APK, not a directory */
+ #else
+     snprintf(
+-        resources_path, sizeof resources_path, "%sresources/", base_path != NULL ? base_path : "");
++        resources_path, sizeof resources_path, "%sgame-resources/", base_path != NULL ? base_path : "");
+ #endif
+ 
+     char* user_path = pc_get_pref_path();
+@@ -638,12 +638,12 @@
+         SDL_AddGamepadMapping(k_builtin_mappings[i]);
+     }
+ 
+-    int mappings_loaded = SDL_AddGamepadMappingsFromFile("resources/gamecontrollerdb.txt");
++    int mappings_loaded = SDL_AddGamepadMappingsFromFile("game-resources/gamecontrollerdb.txt");
+     if (mappings_loaded < 0) {
+         char res_path[512];
+         const char* base = SDL_GetBasePath();
+         if (base != NULL) {
+-            snprintf(res_path, sizeof(res_path), "%sresources/gamecontrollerdb.txt", base);
++            snprintf(res_path, sizeof(res_path), "%sgame-resources/gamecontrollerdb.txt", base);
+             mappings_loaded = SDL_AddGamepadMappingsFromFile(res_path);
+         }
+     }
+--- a/src/pc/launcher.cpp
++++ b/src/pc/launcher.cpp
+@@ -1385,12 +1385,12 @@
+     const char* base = SDL_GetBasePath();
+     std::filesystem::path p = std::filesystem::path(base ? base : ".");
+     std::error_code ec;
+-    if (std::filesystem::exists(p / "resources", ec) && !ec)
+-        return p / "resources";
++    if (std::filesystem::exists(p / "game-resources", ec) && !ec)
++        return p / "game-resources";
+     return p;
+ #else
+     const char* base = SDL_GetBasePath();
+-    return std::filesystem::path(base ? base : ".") / "resources";
++    return std::filesystem::path(base ? base : ".") / "game-resources";
+ #endif
+ }
+ 
+--- a/src/pc/net_dht.c
++++ b/src/pc/net_dht.c
+@@ -254,7 +254,7 @@
+         if (!f) {
+             const char* base = SDL_GetBasePath();
+             if (base) {
+-                snprintf(path, sizeof(path), "%sresources/dht-nodes-v1", base);
++                snprintf(path, sizeof(path), "%sgame-resources/dht-nodes-v1", base);
+                 f = fopen(path, "rb");
+                 if (!f) {
+                     snprintf(path, sizeof(path), "%sdht-nodes-v1", base);
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -417,7 +417,7 @@
+ endif ()
+ add_custom_target(launcher_resources ALL
+     COMMAND ${CMAKE_COMMAND} -E copy_directory
+-        "${CMAKE_CURRENT_SOURCE_DIR}/resources" "$<TARGET_FILE_DIR:melee>/resources")
++        "${CMAKE_CURRENT_SOURCE_DIR}/resources" "$<TARGET_FILE_DIR:melee>/game-resources")
+ add_dependencies(melee launcher_resources)
+ 
+ find_package(Python3 COMPONENTS Interpreter QUIET)

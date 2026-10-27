@@ -1,0 +1,126 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4132fbd..8162fca 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -207,6 +207,7 @@ endif ()
+ # src/pc/vtxarray.c and widescreen.c access disc structs and belong to melee_game.
+ set(PC_SOURCES
+         src/pc/audio.c
++        src/pc/card_comment.c
+         src/pc/disc_open.c
+         src/pc/discfont.c
+         src/pc/gcadapter.c
+@@ -463,6 +464,13 @@ if (NOT ANDROID AND NOT IOS AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+     # (aurora registers its own tests, unbuilt here).
+     enable_testing()
+     add_custom_target(unit_tests)
++    add_executable(card_comment_test EXCLUDE_FROM_ALL tools/test_card_comment.c src/pc/card_comment.c)
++    target_include_directories(card_comment_test PRIVATE src)
++    target_compile_options(card_comment_test PRIVATE -UNDEBUG)
++    add_test(NAME card_comment COMMAND card_comment_test)
++    set_tests_properties(card_comment PROPERTIES LABELS melee)
++    add_dependencies(unit_tests card_comment_test)
++
+     add_executable(launcher_data_test EXCLUDE_FROM_ALL tools/test_launcher_data.cpp src/pc/launcher_data.cpp src/pc/disc_open.c)
+     target_include_directories(launcher_data_test PRIVATE src)
+     target_link_libraries(launcher_data_test PRIVATE aurora::dvd ${MELEE_CRYPTO_LIBS})
+diff --git a/src/melee/lb/lbcardgame.c b/src/melee/lb/lbcardgame.c
+index a426def..48e3c81 100644
+--- a/src/melee/lb/lbcardgame.c
++++ b/src/melee/lb/lbcardgame.c
+@@ -2,6 +2,7 @@
+ 
+ #ifdef TARGET_PC
+ #include "pc/disc.h"
++#include "pc/card_comment.h"
+ #endif
+ 
+ #include "lbarchive.h"
+@@ -114,8 +115,15 @@ static char* lb_8001C658(void)
+     } else {
+         title = "Super Smash Bros. Melee         Game Data";
+     }
++#ifdef TARGET_PC
++    /* PORT: Format in the native platform layer so the iOS GCC-to-Mach-O
++     * game code never calls Apple's variadic libc with the generic ARM ABI. */
++    pc_card_format_comment(_p(comment), CARD_COMMENT_SIZE, title, time.year,
++                           time.mon + 1, time.mday);
++#else
+     sprintf(_p(comment), "%s %4d/%02d/%02d", title, time.year, time.mon + 1,
+             time.mday);
++#endif
+     return _p(comment);
+ }
+ 
+diff --git a/src/pc/card_comment.c b/src/pc/card_comment.c
+new file mode 100644
+index 0000000..f7e45df
+--- /dev/null
++++ b/src/pc/card_comment.c
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-3.0-or-later */
++#include "card_comment.h"
++
++#include <stdio.h>
++
++int pc_card_format_comment(
++    char* comment, size_t capacity, const char* title, int year, int month, int day) {
++    return snprintf(comment, capacity, "%s %4d/%02d/%02d", title, year, month, day);
++}
+diff --git a/src/pc/card_comment.h b/src/pc/card_comment.h
+new file mode 100644
+index 0000000..4707605
+--- /dev/null
++++ b/src/pc/card_comment.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-3.0-or-later */
++#ifndef PC_CARD_COMMENT_H
++#define PC_CARD_COMMENT_H
++
++#include <stddef.h>
++
++/* Keep the game/platform boundary non-variadic: the iOS game compiler uses
++ * the generic AArch64 ABI, while Apple's libc expects stack-based varargs. */
++int pc_card_format_comment(
++    char* comment, size_t capacity, const char* title, int year, int month, int day);
++
++#endif
+diff --git a/tools/test_card_comment.c b/tools/test_card_comment.c
+new file mode 100644
+index 0000000..6d35cc2
+--- /dev/null
++++ b/tools/test_card_comment.c
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-3.0-or-later */
++#include "pc/card_comment.h"
++
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++
++int main(void) {
++    struct {
++        char comment[64];
++        unsigned char guard;
++    } output = {{0}, 0xA5};
++    const char* english = "Super Smash Bros. Melee         Game Data";
++    const char* japanese =
++        "\x91\xe5\x97\x90\x93\xac\x83\x58\x83\x7d\x83\x62\x83\x56\x83\x85\x83\x75\x83\x89\x83\x55"
++        "\x81\x5b\x83\x59\x82\x63\x82\x77\x20\x20\x83\x5a\x81\x5b\x83\x75\x83\x66\x81\x5b\x83\x5e";
++    int count =
++        pc_card_format_comment(output.comment, sizeof(output.comment), english, 2026, 10, 27);
++    assert(count == 52);
++    assert(strcmp(output.comment, "Super Smash Bros. Melee         Game Data 2026/10/27") == 0);
++    assert(output.guard == 0xA5);
++    count = pc_card_format_comment(output.comment, sizeof(output.comment), japanese, 2026, 1, 2);
++    assert(count == 55);
++    assert(memcmp(output.comment, japanese, strlen(japanese)) == 0);
++    assert(strcmp(output.comment + strlen(japanese), " 2026/01/02") == 0);
++    assert(output.guard == 0xA5);
++    char short_buffer[8];
++    count = pc_card_format_comment(short_buffer, sizeof(short_buffer), english, 2026, 10, 27);
++    assert(count == 52);
++    assert(strcmp(short_buffer, "Super S") == 0);
++    puts("PASS: save comments, date padding, capacity and adjacent guard");
++    return 0;
++}

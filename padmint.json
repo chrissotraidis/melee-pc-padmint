@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "melee-pc",
+  "name": "Melee PC",
+  "game": "Super Smash Bros. Melee (GameCube, USA revision 2)",
+  "kind": "decomp-patches",
+  "status": "draft-untested",
+  "inputs": [{
+    "type": "gamecube-disc",
+    "formats": ["iso", "ciso", "rvz"],
+    "when": "in-app",
+    "description": "Import your own USA revision 2 disc into the app after installation. Game assets are not included in the personal IPA."
+  }],
+  "targets": {
+    "ios": {
+      "hosts": {"macos-arm64": "experimental"},
+      "tools": ["git", "cmake", "ninja"],
+      "output": "ipa",
+      "check": "ipa",
+      "steps": [{
+        "stage": "compile",
+        "command": ["{python}", "{repo}/scripts/build-ios.py", "--work", "{work}", "--output", "{output}", "--jobs", "{jobs}"]
+      }]
+    }
+  },
+  "requirements": {
+    "disk_gb": 15,
+    "tools": [
+      {"name": "xcodebuild", "version_args": ["-version"], "player": true, "note": "Install full Xcode with the iOS platform and select its command-line tools."},
+      {"name": "xcrun", "version_args": ["--sdk", "iphoneos", "--show-sdk-path"], "player": true, "note": "Install Xcode's iOS platform."},
+      {"name": "rustup", "version_args": ["--version"], "player": true, "note": "Install Rustup. The recipe installs the pinned Rust 1.96.0 iPhone compiler."}
+    ]
+  },
+  "publication": {"public_binaries": false, "reason": "PadMint downloads pinned upstream source and builds the patched app privately on the player's Mac. The output contains compiled game code and remains personal."},
+  "notes": "Separate from MeleePad. Apple Silicon Mac and Xcode required. Unsigned personal IPA requires the player's signing/install tool. No LiveContainer acceptance yet. No published base app is downloaded."
+}
