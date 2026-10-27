@@ -15,7 +15,7 @@ You need an **Apple Silicon Mac (M1 or newer)**, full **Xcode with its iOS platf
 5. Keep the resulting personal `.ipa` private. Install it with your own signing tool, or import it into your existing LiveContainer setup. **For this test, use a new app/data container and keep your existing container and saves intact.** LiveContainer compatibility still needs the reporter's confirmation.
 6. Transfer your own **USA revision 2 (NTSC-U 1.02)** Melee disc image to Files on the phone. In the app, tap **Choose Disc** and select it. ISO, CISO and RVZ are supported by this recipe. Game assets are not included in the IPA.
 
-The recipe version is **0.1.0**; the personal app identifies itself as **Melee 0.4.2, build 54**. Do not use the in-app upstream updater for this test: upstream updates do not necessarily include this patch.
+The recipe version is **0.1.0**; the personal app identifies itself as **Melee PC 0.4.2, build 54**. It uses a separate bundle identifier so this test build can coexist with the upstream app. Do not use the in-app upstream updater for this test: upstream updates do not necessarily include this patch.
 
 ## Check saving
 

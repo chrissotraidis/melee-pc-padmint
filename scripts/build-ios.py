@@ -138,6 +138,8 @@ def main():
         if key.startswith('DT') or key == 'BuildMachineOSBuild':
             del info[key]
     info.update(CFBundleShortVersionString='0.4.2', CFBundleVersion='54',
+                CFBundleIdentifier='io.github.chrissotraidis.melee-pc-padmint',
+                CFBundleDisplayName='Melee PC', CFBundleName='Melee PC',
                 DTPlatformName='iphoneos', DTPlatformVersion=sdk_version,
                 DTSDKName='iphoneos' + sdk_version)
     with (app / 'Info.plist').open('wb') as stream:
