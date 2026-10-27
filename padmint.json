@@ -68,12 +68,13 @@
         "note": "Install Xcode's iOS platform."
       },
       {
-        "name": "rustup",
+        "name": "$HOME/.cargo/bin/rustup",
         "version_args": [
           "--version"
         ],
         "player": true,
-        "note": "Install Rustup. The recipe installs the pinned Rust 1.96.0 iPhone compiler."
+        "note": "Install Rustup. The recipe installs the pinned Rust 1.96.0 iPhone compiler.",
+        "label": "Rustup"
       }
     ]
   },
