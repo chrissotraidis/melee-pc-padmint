@@ -1,12 +1,27 @@
 # Melee PC for PadMint
 
-Build a personal iPhone/iPad copy of **999sian/melee-pc 0.4.2 with the save-creation fix** on your own Mac. This is a separate app from MeleePad.
+Build a personal iPhone/iPad copy of **999sian/melee-pc 0.4.2 with the save-creation fix** on your own Mac or GitHub’s hosted Mac. This is a separate app from MeleePad.
 
-This repository and its releases contain the recipe, small source patches and build scripts only. PadMint downloads the pinned upstream source and compiles it locally. Your game disc, saves, signing information and finished app stay on your computer. No prebuilt game app is offered here.
+This repository and its releases contain the recipe, small source patches and build scripts only. PadMint downloads the pinned upstream source and compiles it on the selected Mac. Your game disc, saves and signing information are not needed during compilation. Local builds stay on your computer; GitHub builds store the personal IPA in your private repository for one day. No prebuilt game app is offered here.
+
+## Build on GitHub without a Mac
+
+This route uses the same recipe and save patch as the local build. [A real GitHub-hosted build passed](https://github.com/chrissotraidis/padmint/actions/runs/40473291597/job/122085358107) on 27 October 2026 with Xcode 26.3, finishing in about 6½ minutes. You only need a browser and a GitHub account; GitHub supplies the Mac, Xcode and build tools.
+
+Use a **private repository**, because anyone with read access to a public repository can download its Actions artifacts. A public fork cannot be made private, so use a separate imported copy. The workflow refuses this game's artifact-producing run in a public repository. GitHub's private-repository Actions allowance applies; check your usage/budget first. If the allowance is exhausted, GitHub may block the run or bill according to your account settings. See [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+
+1. Sign in to GitHub and open [Import repository](https://github.com/new/import). Enter `https://github.com/chrissotraidis/padmint.git` as the source URL, choose your account as owner, name the new repository `padmint-personal`, select **Private**, and choose **Begin import**. Wait for the import to finish. No credentials are needed for the public source repository. [GitHub's import guide](https://docs.github.com/en/migrations/importing-source-code/using-github-importer/importing-a-repository-with-github-importer) explains this screen.
+2. In your new private repository, open **Actions** and enable workflows if prompted. If Actions is disabled, open **Settings → Actions → General** and allow actions for this repository. On a phone, use the workflow sidebar/menu to reveal the list.
+3. Choose **Build a game for iPhone and iPad → Run workflow**, keep branch **main**, select **melee-pc**, and press the green **Run workflow**. You do not need to install PadMint or Xcode on your computer. Do not upload your disc, saves, Apple ID or signing certificate.
+4. Open the run and wait for the green success check. While signed in, download **melee-pc-iphone-…** under **Artifacts**, then unzip it to get the `.ipa` and `SHA256SUMS`. Download within **one day**. On iPhone, open the ZIP in Files to extract it.
+5. In your existing LiveContainer, tap **+** and select the extracted IPA. Use the new **Melee PC** app with a fresh data container, keeping the old app/container intact. Alternatively, install the IPA using your normal signing tool.
+6. Open Melee PC, tap **Choose Disc**, select your own USA revision 2 / NTSC-U 1.02 disc in Files, and follow [Check saving](#check-saving) below. Do not use the upstream in-app updater for this test.
+
+The result remains **Melee PC 0.4.2, build 54**. A successful cloud build confirms compilation and packaging; it does not confirm LiveContainer saves. The build downloads the latest published Melee PC recipe each time. A private imported copy does not have a **Sync fork** button; to pick up future PadMint workflow changes, import a fresh private copy under a new name.
 
 ## Build with PadMint
 
-You need an **Apple Silicon Mac (M1 or newer)**, full **Xcode with its iOS platform**, **Rustup**, an internet connection and **15 GB of free space**. Windows, Intel Mac, Linux and phone-only builds are not available for this recipe.
+You need an **Apple Silicon Mac (M1 or newer)**, full **Xcode with its iOS platform**, **Rustup**, an internet connection and **15 GB of free space**. This section is for a local Mac build. From Windows, Linux, an Intel Mac or a phone browser, use the [GitHub route](#build-on-github-without-a-mac) above.
 
 1. Install Xcode, open it once to finish setup, and select its command-line tools in **Xcode → Settings → Locations**. Install the **iOS** platform in **Settings → Components** if missing.
 2. [Install Rustup](https://rustup.rs/) if it is not already installed. PadMint shows the setup command and a **Check again** button. The recipe installs the pinned Rust 1.96.0 iPhone compiler automatically.
